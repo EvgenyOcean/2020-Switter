@@ -1,13 +1,32 @@
-from django.shortcuts import render
-from django.http import HttpResponse, Http404, JsonResponse
+from django.shortcuts import render, reverse
+from django.http import HttpResponse, HttpResponseRedirect, Http404, JsonResponse
+from django.conf import settings
+from django.utils.http import url_has_allowed_host_and_scheme
 
 from .models import Tweet
+from .forms import TweetForm
 
 import random
 
 # Create your views here.
 def home(request):
     return render(request, 'pages/home.html', {})
+
+def add_tweet(request):
+    form = TweetForm(request.POST or None) #if GET then request.POST will be False => None
+    if request.method == 'POST':
+        if form.is_valid(): #doesn't seem to be necessary when .save() is used on the form object
+            new_tweet = form.save(commit=False) #just created a new instance of a Tweet 
+            new_tweet.save() #to save to the db or use first .save with commit=True (default)
+
+            # Checking if the redirect is safe, otherwise return to the home page
+            next_url = request.POST.get('redirect')
+            if next_url and url_has_allowed_host_and_scheme(next_url, settings.ALLOWED_HOSTS):
+                return HttpResponseRedirect(next_url)
+            else:
+                return HttpResponseRedirect('/')    
+        #still vating to do sth if form is invalid            
+    return render(request, 'components/form.html', {'form': form}) #just leave it here for a little bit
 
 #in urls.py: path('tweets', 'views.tweets_list')
 def tweets_list(request):
@@ -38,4 +57,3 @@ def tweet_details(request, tweet_id):
         data['message'] = 'Not Found'
         status = 404
     return JsonResponse(data, status=status)
-

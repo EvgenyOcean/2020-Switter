@@ -8,6 +8,18 @@
   </div>
 </div>
 
+<!-- Hardcoded form, yet will be backend validated, because we use exactly the same names as in the django form -->
+<div class="row">
+  <div class="col-10 col-md-6 mx-auto mb-3">
+    <form action="add-tweet" method="POST" class="form">
+      {% csrf_token %}
+      <input type="hidden" name="redirect" value="/">
+      <textarea name="content" class="form-control"></textarea>
+      <input type="submit" value="Add" class="btn btn-success mt-2">
+    </form>
+  </div>
+</div>
+
 <div class="row tweets px-4">
   Loading...
 </div>
@@ -18,43 +30,47 @@
     console.log(tweetId, likesAmount);
   }
 
+  function loadTweets(containerEl){
+    fetch('/tweets')
+      .then(response => {
+        if (response.ok){
+          return response.json()
+        } else {
+          throw new Error('Something went wrong!');
+        }
+      })
+      .then(data => {
+        // getting tweets from db and inserting them into the page, dynamically creating divs and paragraphs for tweets content fields. 
+        let allTweets = data.response; // getting an array with all the tweets from db
+        for (let i=0; i<allTweets.length; i++){
+          let currentTweet = allTweets[i]; // getting an object with a tweet info
+  
+          //creating elements and adding classes and ids
+          let currentDiv = document.createElement('div'); 
+          let likeBtn = document.createElement('button');
+          currentDiv.append(document.createElement('p'));
+          currentDiv.classList.add('col-12', 'col-md-10', 'col-lg-8', 'mx-auto', 'border', 'border-primary', 'py-2','mb-4', 'tweet');
+          currentDiv.id = `tweet-${currentTweet.id}`;
+          likeBtn.classList.add('btn', 'btn-primary');
+          likeBtn.textContent = `Like ${currentTweet.likesAmount}`;
+          
+          //adding click handlers
+          likeBtn.onclick = handleLikeClick.bind(null, currentTweet.id, currentTweet.likesAmount);
+  
+  
+          //inserting created elements onto the page
+          currentDiv.firstElementChild.insertAdjacentText('beforeend', currentTweet.content); //don't trust user input, so content should be paste as string only
+          currentDiv.append(likeBtn);
+          containerEl.append(currentDiv); //adding the tweet to a desired div on a page
+        }
+        containerEl.firstChild.remove(); //just removing the loading text
+      })
+      .catch(err => {
+        console.log(err.message);
+      })
+  }
+
   let tweetsDiv = document.querySelector('.tweets');
-  fetch('/tweets')
-    .then(response => {
-      if (response.ok){
-        return response.json()
-      } else {
-        throw new Error('Something went wrong!');
-      }
-    })
-    .then(data => {
-      // getting tweets from db and inserting them into the page, dynamically creating divs and paragraphs for tweets content fields. 
-      let allTweets = data.response; // getting an array with all the tweets from db
-      for (let i=0; i<allTweets.length; i++){
-        let currentTweet = allTweets[i]; // getting an object with a tweet info
-
-        //creating elements and adding classes and ids
-        let currentDiv = document.createElement('div'); 
-        let likeBtn = document.createElement('button');
-        currentDiv.append(document.createElement('p'));
-        currentDiv.classList.add('col-12', 'col-md-10', 'col-lg-8', 'mx-auto', 'border', 'border-primary', 'py-2','mb-4', 'tweet');
-        currentDiv.id = `tweet-${currentTweet.id}`;
-        likeBtn.classList.add('btn', 'btn-primary');
-        likeBtn.textContent = `Like ${currentTweet.likesAmount}`;
-        
-        //adding click handlers
-        likeBtn.onclick = handleLikeClick.bind(null, currentTweet.id, currentTweet.likesAmount);
-
-
-        //inserting created elements onto the page
-        currentDiv.firstElementChild.insertAdjacentText('beforeend', currentTweet.content); //don't trust user input, so content should be paste as string only
-        currentDiv.append(likeBtn);
-        tweetsDiv.append(currentDiv); //adding the tweet to a desired div on a page
-      }
-      tweetsDiv.firstChild.remove(); //just removing the loading text
-    })
-    .catch(err => {
-      console.log(err.message);
-    })
+  loadTweets(tweetsDiv);
 </script>
 {% endblock %}
