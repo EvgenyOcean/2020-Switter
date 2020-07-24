@@ -18,13 +18,21 @@ def add_tweet(request):
         if form.is_valid(): #doesn't seem to be necessary when .save() is used on the form object
             new_tweet = form.save(commit=False) #just created a new instance of a Tweet 
             new_tweet.save() #to save to the db or use first .save with commit=True (default)
-
+            # If ajax request, then don't bother with redirect, cuz it's unnecessary
+            if request.is_ajax():
+                return JsonResponse(new_tweet.get_formated_record(), status=201)
             # Checking if the redirect is safe, otherwise return to the home page
             next_url = request.POST.get('redirect')
             if next_url and url_has_allowed_host_and_scheme(next_url, settings.ALLOWED_HOSTS):
                 return HttpResponseRedirect(next_url)
             else:
                 return HttpResponseRedirect('/')    
+        else: 
+            if request.is_ajax(): 
+                return JsonResponse({'errors': form.errors}, status=400)
+            else: 
+                for field in form.errors: #to add a red border if there's an exception
+                    form[field].field.widget.attrs['class'] += ' border-danger'
         #still vating to do sth if form is invalid            
     return render(request, 'components/form.html', {'form': form}) #just leave it here for a little bit
 
@@ -34,7 +42,7 @@ def tweets_list(request):
     REST API endpoint to get the list with all the tweets, thus preventing the whole page rerendering
     '''
     qs = Tweet.objects.all() #queryset is an arr with dict-like objects
-    tweets_list = [{'id': x.id, 'content': x.content, 'likesAmount': random.randrange(0,10)} for x in qs] #to destructure queryset and get an arr with obj containing the needed proprs
+    tweets_list = [x.get_formated_record() for x in qs] #to destructure queryset and get an arr with obj containing the needed proprs
     
     data = {'response': tweets_list}
         

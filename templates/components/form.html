@@ -1,5 +1,24 @@
+{% extends 'pages/base.html' %}
+
+{% block content %}
+<!-- If you want to display any errors at the top of the document -->
+{% for field in form %}
+  {% if field.errors %}
+    {% for error in field.errors %}
+      <div class="alert alert-danger mt-2 text-dark">{{error}}</div>
+    {% endfor %}
+  {% endif %}
+{% endfor %}
+
 <form method="POST">
   {% csrf_token %}
-  {{ form }}
+  {% for field in form %}
+    <div class="form-group">
+      <!-- field.label_tag to render lable, and field for rending field itself -->
+      {{ field.label_tag }} 
+      {{ field }}
+    </div>
+  {% endfor %}
   <input type="submit" class="btn btn-success" value="Create">
 </form>
+{% endblock %}
