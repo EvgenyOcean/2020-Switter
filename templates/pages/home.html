@@ -40,24 +40,24 @@
       method: 'POST',
       headers: {
         'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest',
-        'X-Requested-With': 'XMLHttpRequest'
+        'X-Requested-With': 'XMLHttpRequest',
       },
-      body: form
+      body: form,
     }).then(response => {
-      if (response.ok){
+      if ([200, 201].includes(response.status)){
         toggleDisplayErrs(); // to hide errors div
         response.json().then(data => {
           let currentDiv = htmlFromTweet(data);
           tweetsDiv.insertAdjacentElement('afterbegin', currentDiv);
           e.target.elements['content'].value = ''; //or myForm.reset()
         }).catch(err => {console.log(err)})
-      } else {
+      } else if (response.status === 400) { //validation error
         response.json().then(errData => {
+          console.log(errData);
           // extracting all errors, creating a div for each error, prepending to the page
-          let errsDict = errData.errors;
           let allErrs = [];
-          for (let subject of Object.getOwnPropertyNames(errsDict)){
-            for (let err of errsDict[subject]){
+          for (let subject of Object.getOwnPropertyNames(errData)){
+            for (let err of errData[subject]){
               allErrs.push(err);
             }
           }
@@ -71,7 +71,12 @@
           }
           toggleDisplayErrs(errsDiv);
         }).catch(err => {console.log(err)})
-      }
+      } else if (response.status === 401){ //unathorized error
+        response.json().then(errData => {
+          console.log(errData);
+          window.location = '/login'; // redirecting to the login page (a lil hardcoded)
+        })
+      } 
     }).catch(err => {console.log('You shall see me not!')});
   }
 
@@ -126,9 +131,8 @@
       })
       .then(data => {
         // getting tweets from db and inserting them into the page, dynamically creating divs and paragraphs for tweets content fields. 
-        let allTweets = data.response; // getting an array with all the tweets from db
-        for (let i=0; i<allTweets.length; i++){
-          let currentTweet = allTweets[i]; // getting an object with a tweet info
+        for (let i=0; i<data.length; i++){
+          let currentTweet = data[i]; // getting an object with a tweet info
           let currentDiv = htmlFromTweet(currentTweet);
           containerEl.append(currentDiv); //adding the tweet to a desired div on a page
         }
