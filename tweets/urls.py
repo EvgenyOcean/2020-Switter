@@ -7,7 +7,7 @@ app_name = 'tweets'
 
 urlpatterns = [
     path('', views.home, name='home'),
-    path('<int:tweet_id>', views.tweet_details, name='details'),
     path('tweets/', views.tweets_list),
+    path('tweets/<int:pk>', views.tweet_details, name='details'),
     path('add-tweet', views.add_tweet, name='addtweet'),
 ]

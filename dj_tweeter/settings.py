@@ -136,3 +136,19 @@ LOGIN_URL = '/login'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
 
+
+#REST FRAMEWORK SECTION 
+
+
+REST_FRAMEWORK = {
+  'DEFAULT_RENDERER_CLASSES': [
+      'rest_framework.renderers.JSONRenderer',
+  ],
+  'DEFAULT_AUTHENTICATION_CLASSES': [
+    'rest_framework.authentication.SessionAuthentication',
+    'rest_framework.authentication.BasicAuthentication'
+  ]
+}
+
+if DEBUG:
+    REST_FRAMEWORK['DEFAULT_RENDERER_CLASSES'].append('rest_framework.renderers.BrowsableAPIRenderer')

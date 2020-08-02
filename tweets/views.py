@@ -5,8 +5,10 @@ from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.csrf import csrf_exempt
 
 from .serializers import TweetSerializer
-from rest_framework.decorators import api_view
+from rest_framework import status
 from rest_framework.response import Response
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
 
 from .models import Tweet
 from .forms import TweetForm
@@ -19,6 +21,7 @@ def home(request):
 
 
 @api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def add_tweet(request): 
     serializer = TweetSerializer(data=request.data)
     if serializer.is_valid(raise_exception=True):
@@ -35,6 +38,7 @@ def tweets_list(request):
     return Response(serializer.data)
 
 @api_view(['GET', 'PUT', 'DELETE'])
+@permission_classes([IsAuthenticated])
 def tweet_details(request, pk):
     """
     Retrieve, update or delete a tweet.
@@ -42,14 +46,19 @@ def tweet_details(request, pk):
     try:
         tweet = Tweet.objects.get(pk=pk)
     except Tweet.DoesNotExist:
-        return Response(status=status.HTTP_404_NOT_FOUND)
+        return Response({}, status=status.HTTP_404_NOT_FOUND)
 
     if request.method == 'GET':
-        serializer = SnippetSerializer(tweet)
-        return Response(tweet.data)
+        serializer = TweetSerializer(tweet)
+        return Response(serializer.data)
     
-
-
+    if request.method == 'DELETE':
+        if request.user == tweet.user: 
+            tweet.delete()
+            return Response({'message': 'The tweet was deleted!'}, status=status.HTTP_204_NO_CONTENT)
+        else:
+            return Response({'message': 'You\'re not authorized'}, status=401)
+    
 ### 
 # JUST A HISTORICAL REFERENCE :)
 ###
