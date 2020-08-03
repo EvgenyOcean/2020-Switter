@@ -9,6 +9,9 @@ class TweetLike(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
 
 class Tweet(models.Model):
+    #self referencing to implement retweet (same as manyToOne, meaning 1 tweet may have many retweets)
+    original = models.ForeignKey('self', blank=True, on_delete=models.SET_NULL, null=True)
+
     content = models.TextField(null=True, blank=True)
     image = models.FileField(upload_to='images/', null=True, blank=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -23,10 +26,19 @@ class Tweet(models.Model):
         desc = f'Tweet #{self.id}'
         return desc
 
-    #could be commented out, but historical refernce...
+    ######
+    #could be commented out, but historical refernce...↓
+    ######
+    
+    #own serializer before rest_framework
     def get_formated_record(self):
         return {
             'id': self.id, 
             'content': self.content,
             'likesAmount': random.randrange(0,50)
         }
+
+    #for serializers to get parents content, but not the parent object itself...
+    @property
+    def is_retweet(self):
+        return self.original != None

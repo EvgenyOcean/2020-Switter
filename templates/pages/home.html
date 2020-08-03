@@ -11,7 +11,7 @@
 <!-- Hardcoded form, yet will be backend validated, because we use exactly the same names as in the django form -->
 <div class="row">
   <div class="col-10 col-md-6 mx-auto mb-3">
-    <form action="add-tweet" method="POST" class="form" name="add-tweet">
+    <form action="api/tweets/add-tweet" method="POST" class="form" name="add-tweet">
       {% csrf_token %}
       <input type="hidden" name="redirect" value="/">
       <div class="form-group d-none" id="errs-container"></div>
@@ -36,7 +36,7 @@
   function handleAddTweet(e){
     e.preventDefault();
     let form = new FormData(e.target); //allows to send files; and extracts name - value pairs
-    fetch('add-tweet', {
+    fetch('api/tweets/add-tweet', {
       method: 'POST',
       headers: {
         'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest',
@@ -80,48 +80,69 @@
     }).catch(err => {console.log('You shall see me not!')});
   }
 
-  //to render or hide err div
-  function toggleDisplayErrs(errsDiv=null){
-    //get the container which display is none by default (d-none bootstrap class)
-    let errsDivContainer = document.getElementById('errs-container');
-    errsDivContainer.innerHTML = ''; //remove all the prev errors 
-    if (errsDiv){ // if any errs display the errs container and append errs divs
-      errsDivContainer.classList.remove('d-none');
-      errsDivContainer.append(errsDiv);
-    } else { // d-none again
-      errsDivContainer.classList.add('d-none');
-    }
-  }
-
-  //function to handle btnLike click 
-  function handleLikeClick(tweetId, likesAmount){
-    console.log(tweetId, likesAmount);
+  //function to handle likes and retweets 
+  function handleTweetAction(tweetId, action, e){
+    data = {action: action};
+    fetch(`api/tweets/tweet-action/${tweetId}`, {
+      method: 'POST', 
+      headers: {
+        'Content-Type': 'application/json',
+        'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest',
+        'X-Requested-With': 'XMLHttpRequest',
+        'X-CSRFToken': getCookie('csrftoken'),
+      },
+      body: JSON.stringify(data),
+    }).then(response => {
+        if (response.ok){
+          e.target.classList.toggle('bg-info'); //jff for now
+          return response.json();
+        } else {
+          throw new Error('something went wrong!');
+        }
+      })
+      .then(data => {
+        console.log(data);
+        // just to update UI without react
+        if (action === 'like'){
+          e.target.textContent = `Like ${data.likes}`;
+        } else {
+          tweetsDiv.innerHTML = 'Loading...';
+          loadTweets(tweetsDiv);
+        }
+      })
+      .catch(err => {
+        console.log(err);
+      })
   }
 
   // parsing the data into html elements
   function htmlFromTweet(currentTweet){
     //creating elements and adding classes and ids
+    // console.log(currentTweet);
     let currentDiv = document.createElement('div'); 
-    let likeBtn = document.createElement('button');
+
+    //handeling btns
+    let likeBtn = createBtn(currentTweet, 'like');
+    let retweetBtn = createBtn(currentTweet, 'retweet');
+    let btnsGroupDiv = document.createElement('div'); 
+    btnsGroupDiv.classList.add('btn-group'); 
+    btnsGroupDiv.setAttribute('role', 'group');
+    btnsGroupDiv.append(likeBtn, retweetBtn);
+
     currentDiv.append(document.createElement('p'));
     currentDiv.classList.add('col-12', 'col-md-10', 'col-lg-8', 'mx-auto', 'border', 'border-primary', 'py-2','mb-4', 'tweet');
     currentDiv.id = `tweet-${currentTweet.id}`;
-    likeBtn.classList.add('btn', 'btn-primary');
-    likeBtn.textContent = `Like ${currentTweet.likesAmount}`;
-    
-    //adding click handlers
-    likeBtn.onclick = handleLikeClick.bind(null, currentTweet.id, currentTweet.likesAmount);
 
     //inserting created elements onto the page
     currentDiv.firstElementChild.insertAdjacentText('beforeend', currentTweet.content); //don't trust user input, so content should be paste as string only
 
-    currentDiv.append(likeBtn);
+    currentDiv.append(btnsGroupDiv);
     return currentDiv
   }
 
   //loading tweets as a function, now we can call this function whenever it's necessary to update all the tweets
   function loadTweets(containerEl){
-    fetch('/tweets')
+    fetch('api/tweets')
       .then(response => {
         if (response.ok){
           return response.json()
@@ -145,5 +166,55 @@
 
   let tweetsDiv = document.querySelector('.tweets');
   loadTweets(tweetsDiv);
+
+
+  // ADDITIONAL FUNCITONS 
+  function createBtn(currentTweet, btnType){
+    if (btnType === 'like'){
+      let likeBtn = document.createElement('button');
+      likeBtn.classList.add('btn', 'btn-primary');
+      likeBtn.textContent = `Like ${currentTweet.likes}`;
+      //adding click handlers
+      likeBtn.onclick = handleTweetAction.bind(null, currentTweet.id, 'like');
+      return likeBtn
+    } else if (btnType === 'retweet'){
+      let retweetBtn = document.createElement('button');
+      retweetBtn.classList.add('btn', 'btn-outline-info');
+      retweetBtn.textContent = `Retweet`;
+      //adding click handlers
+      retweetBtn.onclick = handleTweetAction.bind(null, currentTweet.id, 'retweet');
+      return retweetBtn
+    }
+  }
+
+   //to render or hide err div
+  function toggleDisplayErrs(errsDiv=null){
+    //get the container which display is none by default (d-none bootstrap class)
+    let errsDivContainer = document.getElementById('errs-container');
+    errsDivContainer.innerHTML = ''; //remove all the prev errors 
+    if (errsDiv){ // if any errs display the errs container and append errs divs
+      errsDivContainer.classList.remove('d-none');
+      errsDivContainer.append(errsDiv);
+    } else { // d-none again
+      errsDivContainer.classList.add('d-none');
+    }
+  }
+
+
+  function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
 </script>
 {% endblock %}

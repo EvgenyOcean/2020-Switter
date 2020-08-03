@@ -4,11 +4,12 @@ from django.conf import settings
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.csrf import csrf_exempt
 
-from .serializers import TweetSerializer
+from .serializers import TweetSerializer, TweetActionSerializer, TweetCreateSerializer
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.parsers import JSONParser
 
 from .models import Tweet
 from .forms import TweetForm
@@ -23,7 +24,7 @@ def home(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def add_tweet(request): 
-    serializer = TweetSerializer(data=request.data)
+    serializer = TweetCreateSerializer(data=request.data)
     if serializer.is_valid(raise_exception=True):
         serializer.save(user=request.user)
         return Response(serializer.data)
@@ -59,6 +60,39 @@ def tweet_details(request, pk):
         else:
             return Response({'message': 'You\'re not authorized'}, status=401)
     
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def tweet_action(request, pk):
+    try:
+        tweet = Tweet.objects.get(pk=pk)
+    except Tweet.DoesNotExist:
+        return Response({}, status=status.HTTP_404_NOT_FOUND)
+
+    user = request.user 
+
+    #1 Serializer to make sure field action is corrent; and potentially check the content
+    actionSerializer = TweetActionSerializer(data=request.data)
+    if actionSerializer.is_valid(raise_exception=True): 
+        action = actionSerializer.validated_data.get('action')
+        #isn't content empty? 
+        content = actionSerializer.validated_data.get('content')
+
+        if action == 'LIKE': 
+            tweet.likes.add(user)
+            return Response({'likes': len(tweet.likes.all())})
+
+        if action == 'DISLIKE': 
+            tweet.likes.remove(user)
+            return Response({'likes': len(tweet.likes.all())})
+
+        if action == 'RETWEET': 
+            retweet = Tweet.objects.create(user=user, original=tweet, content=content)
+            #2 Serializer to get a retweet from db and find parent's content/its content if it would appear to be not a retweet
+            serializer = TweetSerializer(retweet)
+            return Response(serializer.data)
+
+            
+
 ### 
 # JUST A HISTORICAL REFERENCE :)
 ###
