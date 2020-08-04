@@ -27,7 +27,7 @@ def add_tweet(request):
     serializer = TweetCreateSerializer(data=request.data)
     if serializer.is_valid(raise_exception=True):
         serializer.save(user=request.user)
-        return Response(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 @api_view(['GET'])
 def tweets_list(request):
@@ -36,7 +36,7 @@ def tweets_list(request):
     '''
     qs = Tweet.objects.all() 
     serializer = TweetSerializer(qs, many=True)
-    return Response(serializer.data)
+    return Response(serializer.data, status=status.HTTP_200_OK)
 
 @api_view(['GET', 'PUT', 'DELETE'])
 @permission_classes([IsAuthenticated])
@@ -51,14 +51,14 @@ def tweet_details(request, pk):
 
     if request.method == 'GET':
         serializer = TweetSerializer(tweet)
-        return Response(serializer.data)
+        return Response(serializer.data, status=status.HTTP_200_OK)
     
     if request.method == 'DELETE':
         if request.user == tweet.user: 
             tweet.delete()
             return Response({'message': 'The tweet was deleted!'}, status=status.HTTP_204_NO_CONTENT)
         else:
-            return Response({'message': 'You\'re not authorized'}, status=401)
+            return Response({'message': 'You\'re not authorized'}, status=status.HTTP_403_FORBIDDEN)
     
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -79,17 +79,17 @@ def tweet_action(request, pk):
 
         if action == 'LIKE': 
             tweet.likes.add(user)
-            return Response({'likes': len(tweet.likes.all())})
+            return Response({'likes': len(tweet.likes.all())}, status=status.HTTP_200_OK)
 
         if action == 'DISLIKE': 
             tweet.likes.remove(user)
-            return Response({'likes': len(tweet.likes.all())})
+            return Response({'likes': len(tweet.likes.all())}, status=status.HTTP_200_OK)
 
         if action == 'RETWEET': 
             retweet = Tweet.objects.create(user=user, original=tweet, content=content)
             #2 Serializer to get a retweet from db and find parent's content/its content if it would appear to be not a retweet
             serializer = TweetSerializer(retweet)
-            return Response(serializer.data)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
 
             
 
