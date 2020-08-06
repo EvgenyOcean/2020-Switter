@@ -17,6 +17,7 @@ class Tweet(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     timestamp = models.DateTimeField(auto_now_add=True)
     #im not specifying blank=True in the below field
+    #will show all the users who liked the tweet
     likes = models.ManyToManyField(User, related_name='tweet_user', through='TweetLike')
 
     class Meta:

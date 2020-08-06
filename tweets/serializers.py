@@ -43,5 +43,15 @@ class TweetSerializer(serializers.ModelSerializer):
         fields = ['id', 'content', 'likes', 'content', 'original']
 
     #specifying the way we want the data to be modified => send
+    #here I need to have an access to current_user => using context 
+    #here I need to check if current_user likes a tweet
     def get_likes(self, obj):
-        return obj.likes.all().count()
+        user = None
+        request = self.context.get("request")
+        if request and hasattr(request, "user"):
+            user = request.user
+            #if current user liked the tweet
+            user_liked = user in obj.likes.all()
+
+        data = {'likes': obj.likes.all().count(), 'user_liked': user_liked}
+        return data

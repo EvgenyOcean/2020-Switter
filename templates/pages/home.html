@@ -2,14 +2,16 @@
 
 {% block content %}
 
-<div class="row my-3">
+<div id="root"></div>
+
+<div class="row my-3 d-none">
   <div class="col text-center">
     <h1>Hello from the home page!</h1>
   </div>
 </div>
 
 <!-- Hardcoded form, yet will be backend validated, because we use exactly the same names as in the django form -->
-<div class="row">
+<div class="row d-none">
   <div class="col-10 col-md-6 mx-auto mb-3">
     <form action="api/tweets/add-tweet" method="POST" class="form" name="add-tweet">
       {% csrf_token %}
@@ -21,7 +23,7 @@
   </div>
 </div>
 
-<div class="row tweets px-4">
+<div class="row tweets px-4 d-none">
   Loading...
 </div>
 
@@ -104,7 +106,7 @@
         console.log(data);
         // just to update UI without react
         if (action === 'like'){
-          e.target.textContent = `Like ${data.likes}`;
+          e.target.textContent = `Like ${data.likes.likes}`;
         } else {
           tweetsDiv.innerHTML = 'Loading...';
           loadTweets(tweetsDiv);
@@ -173,7 +175,7 @@
     if (btnType === 'like'){
       let likeBtn = document.createElement('button');
       likeBtn.classList.add('btn', 'btn-primary');
-      likeBtn.textContent = `Like ${currentTweet.likes}`;
+      likeBtn.textContent = `Like ${currentTweet.likes.likes}`;
       //adding click handlers
       likeBtn.onclick = handleTweetAction.bind(null, currentTweet.id, 'like');
       return likeBtn

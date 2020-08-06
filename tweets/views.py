@@ -1,20 +1,16 @@
-from django.shortcuts import render, reverse, redirect
+from django.shortcuts import render, redirect
 from django.http import HttpResponse, HttpResponseRedirect, Http404, JsonResponse
 from django.conf import settings
 from django.utils.http import url_has_allowed_host_and_scheme
-from django.views.decorators.csrf import csrf_exempt
 
 from .serializers import TweetSerializer, TweetActionSerializer, TweetCreateSerializer
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.parsers import JSONParser
 
 from .models import Tweet
 from .forms import TweetForm
-
-import random
 
 # Create your views here.
 def home(request):
@@ -35,7 +31,7 @@ def tweets_list(request):
     REST API endpoint to get the list with all the tweets, thus preventing the whole page rerendering
     '''
     qs = Tweet.objects.all() 
-    serializer = TweetSerializer(qs, many=True)
+    serializer = TweetSerializer(qs, many=True, context={'request': request})
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 @api_view(['GET', 'PUT', 'DELETE'])

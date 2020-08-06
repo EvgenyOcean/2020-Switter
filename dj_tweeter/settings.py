@@ -18,7 +18,6 @@ MAX_TWEET_LENGTH = 250
 ALLOWED_TWEET_ACTIONS = ['LIKE', 'DISLIKE', 'RETWEET']
 
 
-
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -32,7 +31,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['127.0.0.1']
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
 
 
 # Application definition
@@ -49,12 +48,14 @@ INSTALLED_APPS = [
     'tweets.apps.TweetsConfig',
 
     #third parties 
-    'rest_framework'
+    'rest_framework',
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -130,13 +131,25 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
+
+#I think it pointless cuz for now it's just the same dir
 STATIC_URL = '/static/'
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, "static"),
+]
+#emulating sending the static files to the server 
+#python manage.py collectstatic
+STATIC_ROOT = os.path.join(BASE_DIR, "static-root")
+
+# LOGIN STUFF
 LOGIN_URL = '/login'
+
+# MEDIA STUFF
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
 
 
-#REST FRAMEWORK SECTION 
+# REST FRAMEWORK SECTION 
 REST_FRAMEWORK = {
   'DEFAULT_RENDERER_CLASSES': [
       'rest_framework.renderers.JSONRenderer',
@@ -149,3 +162,11 @@ REST_FRAMEWORK = {
 
 if DEBUG:
     REST_FRAMEWORK['DEFAULT_RENDERER_CLASSES'].append('rest_framework.renderers.BrowsableAPIRenderer')
+
+
+#CORS HEADERS SECTION
+CORS_ORIGIN_WHITELIST = [
+    "http://localhost:3000",
+    "http://localhost:3001",
+    "http://127.0.0.1:9000",
+]
