@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React from 'react';
 
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
@@ -7,19 +7,18 @@ import Col from 'react-bootstrap/Col';
 
 
 function CreateTweetForm(props) {
-  const [value, setValue] = useState('');
-
-  const handleTextChange = (e) => {
-    setValue(e.target.value);
-  }
-
+  let value = props.value; 
+  let dispatch = props.dispatch;
   return (
     <Row>
       <Col xs={10} lg={8} className="mx-auto mb-5 px-0">
-        <Form onSubmit={props.handleTweetAdd.bind(null, value)}>
+        <Form onSubmit={props.handleTweetAdd}>
           <Form.Group controlId="exampleForm.ControlTextarea1">
             <Form.Label>Create New Tweet:</Form.Label>
-            <Form.Control as="textarea" rows="3" value={value} onChange={handleTextChange} />
+            <Form.Control as="textarea" rows="3" value={value} onChange={(e)=>{
+              let value = e.target.value; 
+              dispatch({action: 'changing textarea', value})
+            }} />
           </Form.Group>
           <Button variant="primary" type="submit">
             Submit

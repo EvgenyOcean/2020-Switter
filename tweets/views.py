@@ -20,10 +20,11 @@ def home(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def add_tweet(request): 
-    serializer = TweetCreateSerializer(data=request.data)
+    serializer = TweetCreateSerializer(data=request.data, context={'request': request})
     if serializer.is_valid(raise_exception=True):
-        serializer.save(user=request.user)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        new_tweet = serializer.save(user=request.user) #it's gonna be an instance of a tweet model
+        new_tweet = TweetSerializer(new_tweet, context={'request': request})
+        return Response(new_tweet.data, status=status.HTTP_201_CREATED)
 
 @api_view(['GET'])
 def tweets_list(request):
@@ -74,17 +75,19 @@ def tweet_action(request, pk):
         content = actionSerializer.validated_data.get('content')
 
         if action == 'LIKE': 
+            print('liking')
             tweet.likes.add(user)
             return Response({'likes': len(tweet.likes.all())}, status=status.HTTP_200_OK)
 
         if action == 'DISLIKE': 
+            print('disliking')
             tweet.likes.remove(user)
             return Response({'likes': len(tweet.likes.all())}, status=status.HTTP_200_OK)
 
         if action == 'RETWEET': 
             retweet = Tweet.objects.create(user=user, original=tweet, content=content)
             #2 Serializer to get a retweet from db and find parent's content/its content if it would appear to be not a retweet
-            serializer = TweetSerializer(retweet)
+            serializer = TweetSerializer(retweet, context={'request': request})
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
             
