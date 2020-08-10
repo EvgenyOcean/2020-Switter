@@ -26,14 +26,22 @@ def add_tweet(request):
         new_tweet = TweetSerializer(new_tweet, context={'request': request})
         return Response(new_tweet.data, status=status.HTTP_201_CREATED)
 
+
 @api_view(['GET'])
 def tweets_list(request):
     '''
-    REST API endpoint to get the list with all the tweets, thus preventing the whole page rerendering
+    REST API endpoint to get the list with all the tweets, 
+    thus preventing the whole page rerendering
+    Can accept /?username=username, and fetch only the user's tweets
     '''
-    qs = Tweet.objects.all() 
+    username = request.GET.get('username')
+    if username:
+        qs = Tweet.objects.filter(user__username=username) 
+    else:
+        qs = Tweet.objects.all() 
     serializer = TweetSerializer(qs, many=True, context={'request': request})
     return Response(serializer.data, status=status.HTTP_200_OK)
+
 
 @api_view(['GET', 'PUT', 'DELETE'])
 @permission_classes([IsAuthenticated])
@@ -47,16 +55,19 @@ def tweet_details(request, pk):
         return Response({}, status=status.HTTP_404_NOT_FOUND)
 
     if request.method == 'GET':
-        serializer = TweetSerializer(tweet)
+        serializer = TweetSerializer(tweet, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)
     
     if request.method == 'DELETE':
         if request.user == tweet.user: 
             tweet.delete()
-            return Response({'message': 'The tweet was deleted!'}, status=status.HTTP_204_NO_CONTENT)
+            return Response({'message': 'The tweet was deleted!'}, 
+                            status=status.HTTP_204_NO_CONTENT)
         else:
-            return Response({'message': 'You\'re not authorized'}, status=status.HTTP_403_FORBIDDEN)
+            return Response({'message': 'You\'re not authorized'}, 
+                            status=status.HTTP_403_FORBIDDEN)
     
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def tweet_action(request, pk):
@@ -77,7 +88,8 @@ def tweet_action(request, pk):
         if action == 'LIKE': 
             print('liking')
             tweet.likes.add(user)
-            return Response({'likes': len(tweet.likes.all())}, status=status.HTTP_200_OK)
+            return Response({'likes': len(tweet.likes.all())}, 
+                            status=status.HTTP_200_OK)
 
         if action == 'DISLIKE': 
             print('disliking')
@@ -86,7 +98,8 @@ def tweet_action(request, pk):
 
         if action == 'RETWEET': 
             retweet = Tweet.objects.create(user=user, original=tweet, content=content)
-            #2 Serializer to get a retweet from db and find parent's content/its content if it would appear to be not a retweet
+            #2 Serializer to get a retweet from db and 
+            #find parent's content/its content if it would appear to be not a retweet
             serializer = TweetSerializer(retweet, context={'request': request})
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
@@ -99,7 +112,8 @@ def add_tweet_dj(request):
     form = TweetForm(request.POST or None) #if GET then request.POST will be False => None
     if request.method == 'POST':
 
-        #if user is not logged in, then he's not allowed to create any tweets, because db is set up the way, that every tweet must have a user foreign key
+        #if user is not logged in, then he's not allowed to create any tweets, 
+        #because db is set up the way, that every tweet must have a user foreign key
         if request.user.is_anonymous: 
             if request.is_ajax(): #if ajax, let js handle the rest
                 return JsonResponse({'errors': 'User is not logged in'}, status=401)
@@ -108,7 +122,9 @@ def add_tweet_dj(request):
 
         if form.is_valid(): #doesn't seem to be necessary when .save() is used on the form object
             new_tweet = form.save(commit=False) #just created a new instance of a Tweet 
-            new_tweet.user = request.user #that's why commit=False upthere, cuz we need an opportunity to add a user to the tweet
+
+            #that's why commit=False upthere, cuz we need an opportunity to add a user to the tweet
+            new_tweet.user = request.user 
             new_tweet.save() #to save to the db or use first .save with commit=True (default)
             # If ajax request, then don't bother with redirect, cuz it's unnecessary
             if request.is_ajax():
@@ -138,7 +154,9 @@ def tweets_list_dj(request):
     REST API endpoint to get the list with all the tweets, thus preventing the whole page rerendering
     '''
     qs = Tweet.objects.all() #queryset is an arr with dict-like objects
-    tweets_list = [x.get_formated_record() for x in qs] #to destructure queryset and get an arr with obj containing the needed proprs
+
+    #to destructure queryset and get an arr with obj containing the needed proprs
+    tweets_list = [x.get_formated_record() for x in qs] 
     
     data = {'response': tweets_list}
         

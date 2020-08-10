@@ -10,7 +10,7 @@ function Tweet(props) {
 
   let tweet = props.tweet; 
   let original = props.tweet.original;
-
+  
   return (
     <Col xs={10} lg={8} className="mx-auto border border-success py-3 mb-3">
       <div className='media'>

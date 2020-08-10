@@ -8,7 +8,6 @@ import Col from 'react-bootstrap/Col';
 
 function CreateTweetForm(props) {
   let value = props.value; 
-  let dispatch = props.dispatch;
   return (
     <Row>
       <Col xs={10} lg={8} className="mx-auto mb-5 px-0">
@@ -16,8 +15,9 @@ function CreateTweetForm(props) {
           <Form.Group controlId="exampleForm.ControlTextarea1">
             <Form.Label>Create New Tweet:</Form.Label>
             <Form.Control as="textarea" rows="3" value={value} onChange={(e)=>{
-              let value = e.target.value; 
-              dispatch({action: 'changing textarea', value})
+              // let value = e.target.value; 
+              // dispatch({action: 'changing textarea', value})
+              props.handleTextArea(e);
             }} />
           </Form.Group>
           <Button variant="primary" type="submit">
