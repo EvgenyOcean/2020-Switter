@@ -16,6 +16,18 @@ from .forms import TweetForm
 def home(request):
     return render(request, 'pages/home.html', {})
 
+def detail(request, pk):
+    # should I handle err if tweet does not exist here? 
+    return render(request, 'pages/detail.html', {'tweet_id': pk})
+
+def user(request, username):
+    print(request.user.get_username())
+    if (username == request.user.get_username()):
+        print('got a match!')
+        return redirect('home')
+    # should I handle err if tweet does not exist here? 
+    return render(request, 'pages/user.html', {'username': username})
+
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])

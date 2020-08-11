@@ -4,10 +4,12 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.views.generic import TemplateView
 
-from tweets.views import home #gotta fix that
+from tweets.views import home, detail, user #gotta fix that
 
 urlpatterns = [
     path('', home, name='home'), #gotta fix that
+    path('<int:pk>', detail, name='detail'),
+    path('<str:username>', user, name='user'),
     path('react/', TemplateView.as_view(template_name="react/react.html")),
     path('api/tweets/', include('tweets.urls')),
     path('admin/', admin.site.urls),

@@ -10,7 +10,8 @@ class UserContextProvider extends React.Component{
         username: props.username, 
         canTweet: props.canTweet,
         page: props.page,
-        tweetId: props.tweetId
+        tweetId: props.tweetId,
+        feedOwner: props.feedOwner
       },
       value: '', //maybe later on value will be somewhere else ? 
       tweets: [],
@@ -27,7 +28,11 @@ class UserContextProvider extends React.Component{
 
     if (this.state.dataset.username){
       // if django passes username
-      endpoint += `/?username=${this.state.dataset.username}`;
+      if (this.state.dataset.feedOwner){
+        endpoint += `/?username=${this.state.dataset.feedOwner}`;
+      }else{
+        endpoint += `/?username=${this.state.dataset.username}`;
+      }
     } else if (this.state.dataset.tweetId){
       // if django passes tweetid
       endpoint += `/${this.state.dataset.tweetId}`;
@@ -42,8 +47,12 @@ class UserContextProvider extends React.Component{
         }
       })
       .then(data => {
-        this.setState({tweets: data});
-        // dispatch({action: 'fetching tweets', tweets: data});
+        // the condition below will be met, if detailed view requested a tweet
+        if (!Array.isArray(data)){
+          this.setState({tweets: [data]});
+        } else {
+          this.setState({tweets: data});
+        };
       })
       .catch(err => {
         console.log(err.message);
@@ -60,7 +69,7 @@ class UserContextProvider extends React.Component{
       headers: {
         'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest',
         'X-Requested-With': 'XMLHttpRequest',
-        // some csrf token later on? 
+        // 'X-CSRFToken': getCookie('csrftoken'),
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(data),
@@ -81,6 +90,8 @@ class UserContextProvider extends React.Component{
       })
   }
 
+  // you need to fix that, cuz when you're retweing someone else's tweets 
+  // they're prepending to someone else's feed which is bad
   handleRetweet(id){
     let action = 'retweet';
     fetch(`/api/tweets/tweet-action/${id}`, {
@@ -88,7 +99,7 @@ class UserContextProvider extends React.Component{
       headers: {
         'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest',
         'X-Requested-With': 'XMLHttpRequest',
-        // some csrf token later on? 
+        // 'X-CSRFToken': getCookie('csrftoken'),
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({action}), 
@@ -99,22 +110,67 @@ class UserContextProvider extends React.Component{
         throw new Error('something went wrong!');
       }
     }).then(newTweet => {
-      let tweets = [newTweet, ...this.state.tweets];
-      this.setState({tweets});
-      // dispatch({action: 'retweeting', newTweet});
+      // what it means is we need to prepend new retweet only if its user's own feed
+      // this is true only if a user on his home page
+      if (this.state.dataset.page === 'home'){
+        let tweets = [newTweet, ...this.state.tweets];
+        this.setState({tweets});
+      } else {
+        // paste a message that the tweet was retweeted; 
+        console.log('Tweet was successfully retweeted!');
+      }
     }).catch(err => {
       console.log(err);
     })
   }
 
   handleLikeClick(id){
-    let action = this.state.tweets.find(tweet => tweet.id === id).likes.user_liked ? 'dislike' : 'like';
+    // toDo: I should consider reduce the amount of ifs statements and make a solid single logic
+    // works if we have all the tweets in the state
+    let action; 
+    let updatingTweet; 
+    let theTweet;
+    if (this.state.tweets.length > 1){
+      // we have many tweets
+      // but even though we have many tweets, we could have a retweet
+      // which is not in the state, and we need to like the tweet anyway!
+
+      if (this.state.tweets.find(tweet => tweet.id === id)){
+        // maybe we're liking our own tweet
+        theTweet = this.state.tweets.find(tweet => tweet.id === id);
+        action = theTweet.likes.user_liked ? 'dislike' : 'like';
+      } else {
+        // otherwise, we're liking one's original tweet
+        theTweet = this.state.tweets.find(tweet => {
+          if (tweet.original){
+            return tweet.original.id === id
+          } 
+          return false;
+        });
+        action = theTweet.original.likes.user_liked ? 'dislike' : 'like';
+      }
+
+    } else {
+      // we have only one tweet in the state
+
+      if (this.state.tweets[0].id === id){
+        // liking the main tweet
+        action = this.state.tweets[0].likes.user_liked ? 'dislike' : 'like';
+        updatingTweet = 'main';
+      } else {
+        // liking the parent tweet
+        action = this.state.tweets[0].original.likes.user_liked ? 'dislike' : 'like';
+        updatingTweet = 'original';
+      }
+    }
+
+
     fetch(`/api/tweets/tweet-action/${id}`, {
       method: "POST", 
       headers: {
         'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest',
         'X-Requested-With': 'XMLHttpRequest',
-        // some csrf token later on? 
+        // 'X-CSRFToken': getCookie('csrftoken'),
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({action}), 
@@ -131,34 +187,65 @@ class UserContextProvider extends React.Component{
       // [!] need a deep copy of the state, because we will change the amount of likes right in the object
       let deepStateTweetsCopy = JSON.stringify(this.state.tweets);
       deepStateTweetsCopy = JSON.parse(deepStateTweetsCopy);
-      // find the tweet, likes amount of which, are being changed
-      let currentTweet = deepStateTweetsCopy.find(tweet => tweet.id === id);
 
-      // changing original tweet
-      currentTweet.likes.likes = newLikes; 
-      currentTweet.likes.user_liked = !currentTweet.likes.user_liked;
-
-      // but that's not it, cuz above we just handle the original tweet like changing, 
-      // but what if that tweet was retweeted, then the tweet also can be found at a_tweet.original 
-      // and we need to update the UI there as well; anyway the id is the same, so it's easy to do:
-      let tweetsContainsOriginal = deepStateTweetsCopy.filter(tweet => {
-        if (tweet.original){
-          return tweet.original.id === id;
+      // if there's only one tweet in the state, there's nothing left to update but itself
+      if (this.state.dataset.page === 'detail'){
+        if (updatingTweet === 'main'){
+          deepStateTweetsCopy[0].likes.likes = newLikes; 
+          deepStateTweetsCopy[0].likes.user_liked = !deepStateTweetsCopy[0].likes.user_liked; 
+        } else {
+          deepStateTweetsCopy[0].original.likes.likes = newLikes; 
+          deepStateTweetsCopy[0].original.likes.user_liked = !deepStateTweetsCopy[0].original.likes.user_liked; 
         }
-      });
-
-      // oh yeah... it can be retweeted multiple times, so changing it everywhere; 
-      if (tweetsContainsOriginal){
-        for (let tweetContainsOriginal of tweetsContainsOriginal){
-          tweetContainsOriginal.original.likes.likes = newLikes; 
-          tweetContainsOriginal.original.likes.user_liked = !tweetContainsOriginal.original.likes.user_liked; 
-        }
+        this.setState({tweets: deepStateTweetsCopy})
+        return;
       }
 
+      // find the tweet, likes amount of which, are being changed
+      let currentTweet;
+      // it can be original tweet itself in one place
+      if (deepStateTweetsCopy.find(tweet => tweet.id === id)){
+        currentTweet = deepStateTweetsCopy.find(tweet => tweet.id === id);
+        //change original tweet's likes
+        // console.log(currentTweet);
+        currentTweet.likes.likes = newLikes; 
+        currentTweet.likes.user_liked = !currentTweet.likes.user_liked;
+
+        // I have to check if the tweet is also somewhere else on the page: 
+        let currentTweetAsOriginal = deepStateTweetsCopy.filter(tweet => {
+          if (tweet.original){
+            return tweet.original.id === id;
+          };
+          return false;
+        });
+
+        // if there're any
+        if (currentTweetAsOriginal){
+          for (let tweetContainsOriginal of currentTweetAsOriginal){
+            tweetContainsOriginal.original.likes.likes = newLikes; 
+            tweetContainsOriginal.original.likes.user_liked = !tweetContainsOriginal.original.likes.user_liked; 
+          }
+        }
+      } else {
+        // or it can be found at .original in multiple places
+        let currentTweetAsOriginal = deepStateTweetsCopy.filter(tweet => {
+          if (tweet.original){
+            return tweet.original.id === id;
+          };
+          return false;
+        });
+
+        // if there're any
+        if (currentTweetAsOriginal){
+          for (let tweetContainsOriginal of currentTweetAsOriginal){
+            tweetContainsOriginal.original.likes.likes = newLikes; 
+            tweetContainsOriginal.original.likes.user_liked = !tweetContainsOriginal.original.likes.user_liked; 
+          }
+        }
+      }
+    
       // finally, rerendering the updated tweets
       this.setState({tweets: deepStateTweetsCopy})
-      // dispatch({action: 'fetching tweets', tweets: deepStateTweetsCopy});
-
     }).catch(err => {
       console.log(err);
     })
@@ -190,3 +277,21 @@ class UserContextProvider extends React.Component{
 }
 
 export default UserContextProvider;
+
+
+// OTHER FUNCTIONS, ALSO GOOD FOR UTILS AND STUFF
+// function getCookie(name) {
+//   let cookieValue = null;
+//   if (document.cookie && document.cookie !== '') {
+//       const cookies = document.cookie.split(';');
+//       for (let i = 0; i < cookies.length; i++) {
+//           const cookie = cookies[i].trim();
+//           // Does this cookie string begin with the name we want?
+//           if (cookie.substring(0, name.length + 1) === (name + '=')) {
+//               cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+//               break;
+//           }
+//       }
+//   }
+//   return cookieValue;
+// }

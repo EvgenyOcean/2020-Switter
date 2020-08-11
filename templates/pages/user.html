@@ -1,0 +1,5 @@
+{% extends 'pages/base.html' %}
+
+{% block content %}
+  <div id="root" data-page="user" data-username="{{user.get_username}}" data-feed-owner="{{username}}" data-can-tweet="false"></div>
+{% endblock %}
