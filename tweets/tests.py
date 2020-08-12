@@ -6,12 +6,13 @@ from .models import Tweet
 
 from rest_framework.test import APIClient
 
-
 # Create your tests here.
 class TweetsTesting(TestCase):
     #good for: filling the db, creating users, all the prep work...
     def setUp(self): 
-        #note that create_user() [not just .create()] is used to store correct hashed password => .create won't hash the password => .login() will hash the pw as well, so hashed != unhashed 
+        # note that create_user() [not just .create()] is used to store correct hashed password
+        # .create won't hash the password
+        # .login() will hash the pw as well, so hashed != unhashed 
         self.user = User.objects.create_user(username='steven', password='hello123Dude')
         self.user2 = User.objects.create_user(username='jojo', password='hello123Dude')
 
@@ -96,3 +97,4 @@ class TweetsTesting(TestCase):
         #deletings other's tweets 
         response = client2.delete('/api/tweets/2')
         self.assertEqual(response.status_code, 403)
+

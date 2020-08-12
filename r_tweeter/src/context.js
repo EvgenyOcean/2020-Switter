@@ -19,23 +19,22 @@ class UserContextProvider extends React.Component{
     this.handleRetweet = this.handleRetweet.bind(this);
     this.handleTweetAdd = this.handleTweetAdd.bind(this);
     this.handleLikeClick = this.handleLikeClick.bind(this);
+    this.handleDeleteClick = this.handleDeleteClick.bind(this);
     this.handleTextArea = this.handleTextArea.bind(this);
   }
 
   componentDidMount(){
     // so by default im fetching all the tweets
     let endpoint = '/api/tweets';
-
-    if (this.state.dataset.username){
+    // as a better alternative, you could have checked for page here
+    if (this.state.dataset.feedOwner){
       // if django passes username
-      if (this.state.dataset.feedOwner){
-        endpoint += `/?username=${this.state.dataset.feedOwner}`;
-      }else{
-        endpoint += `/?username=${this.state.dataset.username}`;
-      }
+      endpoint += `/?username=${this.state.dataset.feedOwner}`;
     } else if (this.state.dataset.tweetId){
       // if django passes tweetid
       endpoint += `/${this.state.dataset.tweetId}`;
+    } else if (this.state.dataset.page === 'home'){
+      endpoint += `/?username=${this.state.dataset.username}`;
     }
 
     fetch(endpoint)
@@ -69,7 +68,7 @@ class UserContextProvider extends React.Component{
       headers: {
         'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest',
         'X-Requested-With': 'XMLHttpRequest',
-        // 'X-CSRFToken': getCookie('csrftoken'),
+        'X-CSRFToken': getCookie('csrftoken'),
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(data),
@@ -83,7 +82,6 @@ class UserContextProvider extends React.Component{
       .then(newTweet => {
         let tweets = [newTweet, ...this.state.tweets];
         this.setState({tweets, value: ''});
-        // dispatch({action: 'adding new tweet', newTweet});
       })
       .catch(err => {
         console.log(err);
@@ -99,7 +97,7 @@ class UserContextProvider extends React.Component{
       headers: {
         'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest',
         'X-Requested-With': 'XMLHttpRequest',
-        // 'X-CSRFToken': getCookie('csrftoken'),
+        'X-CSRFToken': getCookie('csrftoken'),
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({action}), 
@@ -120,6 +118,32 @@ class UserContextProvider extends React.Component{
         console.log('Tweet was successfully retweeted!');
       }
     }).catch(err => {
+      console.log(err);
+    })
+  }
+
+  handleDeleteClick(id){
+    let action = 'delete'; 
+    fetch(`/api/tweets/${id}`, {
+      method: "DELETE", 
+      headers: {
+        'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest',
+        'X-Requested-With': 'XMLHttpRequest',
+        'X-CSRFToken': getCookie('csrftoken'),
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({action}), 
+    }).then(response => {
+      if (response.ok){
+        return response.json()
+      }else {
+        throw new Error('something went wrong!');
+      }
+    })
+    .then(data => {
+      console.log(data);
+    })
+    .catch(err => {
       console.log(err);
     })
   }
@@ -152,6 +176,7 @@ class UserContextProvider extends React.Component{
 
     } else {
       // we have only one tweet in the state
+      console.log(id);
 
       if (this.state.tweets[0].id === id){
         // liking the main tweet
@@ -170,7 +195,7 @@ class UserContextProvider extends React.Component{
       headers: {
         'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest',
         'X-Requested-With': 'XMLHttpRequest',
-        // 'X-CSRFToken': getCookie('csrftoken'),
+        'X-CSRFToken': getCookie('csrftoken'),
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({action}), 
@@ -267,6 +292,7 @@ class UserContextProvider extends React.Component{
           handleTweetAdd: this.handleTweetAdd, 
           handleRetweet: this.handleRetweet, 
           handleTextArea: this.handleTextArea,
+          handleDeleteClick: this.handleDeleteClick,
         }}
       >
 
@@ -280,18 +306,18 @@ export default UserContextProvider;
 
 
 // OTHER FUNCTIONS, ALSO GOOD FOR UTILS AND STUFF
-// function getCookie(name) {
-//   let cookieValue = null;
-//   if (document.cookie && document.cookie !== '') {
-//       const cookies = document.cookie.split(';');
-//       for (let i = 0; i < cookies.length; i++) {
-//           const cookie = cookies[i].trim();
-//           // Does this cookie string begin with the name we want?
-//           if (cookie.substring(0, name.length + 1) === (name + '=')) {
-//               cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-//               break;
-//           }
-//       }
-//   }
-//   return cookieValue;
-// }
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+      const cookies = document.cookie.split(';');
+      for (let i = 0; i < cookies.length; i++) {
+          const cookie = cookies[i].trim();
+          // Does this cookie string begin with the name we want?
+          if (cookie.substring(0, name.length + 1) === (name + '=')) {
+              cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+              break;
+          }
+      }
+  }
+  return cookieValue;
+}

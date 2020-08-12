@@ -61,6 +61,7 @@ def tweet_details(request, pk):
     """
     Retrieve, update or delete a tweet.
     """
+    
     try:
         tweet = Tweet.objects.get(pk=pk)
     except Tweet.DoesNotExist:
@@ -73,8 +74,8 @@ def tweet_details(request, pk):
     if request.method == 'DELETE':
         if request.user == tweet.user: 
             tweet.delete()
-            return Response({'message': 'The tweet was deleted!'}, 
-                            status=status.HTTP_204_NO_CONTENT)
+            return Response({"message": "The tweet was deleted!"}, 
+                            status=status.HTTP_200_OK)
         else:
             return Response({'message': 'You\'re not authorized'}, 
                             status=status.HTTP_403_FORBIDDEN)

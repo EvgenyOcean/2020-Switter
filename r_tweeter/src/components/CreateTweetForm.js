@@ -15,8 +15,6 @@ function CreateTweetForm(props) {
           <Form.Group controlId="exampleForm.ControlTextarea1">
             <Form.Label>Create New Tweet:</Form.Label>
             <Form.Control as="textarea" rows="3" value={value} onChange={(e)=>{
-              // let value = e.target.value; 
-              // dispatch({action: 'changing textarea', value})
               props.handleTextArea(e);
             }} />
           </Form.Group>

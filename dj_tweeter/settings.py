@@ -143,6 +143,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, "static-root")
 
 # LOGIN STUFF
 LOGIN_URL = '/login'
+LOGIN_REDIRECT_URL = "/"
 
 # MEDIA STUFF
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
@@ -162,7 +163,7 @@ REST_FRAMEWORK = {
 
 if DEBUG:
     REST_FRAMEWORK['DEFAULT_RENDERER_CLASSES'].append('rest_framework.renderers.BrowsableAPIRenderer')
-    REST_FRAMEWORK['DEFAULT_AUTHENTICATION_CLASSES'] = ['dj_tweeter.dev.DevAuthentication']
+    # REST_FRAMEWORK['DEFAULT_AUTHENTICATION_CLASSES'] = ['dj_tweeter.dev.DevAuthentication']
 
 
 #CORS HEADERS SECTION

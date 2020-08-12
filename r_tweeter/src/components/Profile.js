@@ -4,7 +4,7 @@ import Col from 'react-bootstrap/Col';
 import Row from 'react-bootstrap/Row';
 
 function Profile(props) {
-  let username = props.username;
+  let username = props.dataset.feedOwner || props.dataset.username;
 
   return (
     <Row>

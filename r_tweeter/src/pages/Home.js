@@ -17,7 +17,7 @@ function Home(props) {
 
   let content = (
     <>
-      <Profile username={dataset.feedOwner}/>
+      <Profile dataset={dataset}/>
       {dataset.canTweet === 'true' && 
       <CreateTweetForm 
         value={value} 
@@ -31,6 +31,7 @@ function Home(props) {
             tweet={tweet} 
             handleRetweet={handleRetweet} 
             handleLikeClick={handleLikeClick}
+            dataset={dataset}
           /> 
         )}
       </Row>
