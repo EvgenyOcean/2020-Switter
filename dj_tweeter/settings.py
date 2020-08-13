@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     #internal
     'tweets.apps.TweetsConfig',
+    'accounts.apps.AccountsConfig',
 
     #third parties 
     'rest_framework',
@@ -142,8 +143,8 @@ STATICFILES_DIRS = [
 STATIC_ROOT = os.path.join(BASE_DIR, "static-root")
 
 # LOGIN STUFF
-LOGIN_URL = '/login'
-LOGIN_REDIRECT_URL = "/"
+LOGIN_URL = 'login'
+LOGIN_REDIRECT_URL = "home"
 
 # MEDIA STUFF
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')

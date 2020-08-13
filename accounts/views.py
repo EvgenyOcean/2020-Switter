@@ -7,7 +7,7 @@ def register(request):
     if request.method == 'POST':
         form = UserRegisterFrom(request.POST)
         if form.is_valid():
-            # form.save()
+            form.save()
             username = form.cleaned_data.get('username')
             print(f'New account for {username} was created')
             return redirect('home')
