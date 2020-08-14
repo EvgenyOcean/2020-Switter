@@ -14,11 +14,12 @@ urlpatterns = [
     path('register', accounts_view.register, name='register'),
     path('login', auth_views.LoginView.as_view(template_name="accounts/login.html"), name='login'),
     path('logout', auth_views.LogoutView.as_view(template_name="accounts/logout.html"), name='logout'),
+    path('api/tweets/', include('tweets.urls')),
+    path('api/accounts/', include('accounts.urls')),
+    path('admin/', admin.site.urls),
+    path('react/', TemplateView.as_view(template_name="react/react.html")),
     path('<int:pk>', detail, name='detail'),
     path('<str:username>', user, name='user'),
-    path('react/', TemplateView.as_view(template_name="react/react.html")),
-    path('api/tweets/', include('tweets.urls')),
-    path('admin/', admin.site.urls),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
 #just outta curiosity [<URLPattern '^static/(?P<path>.*)$'>]
