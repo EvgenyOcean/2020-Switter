@@ -15,26 +15,41 @@ class UserContextProvider extends React.Component{
       },
       value: '', //maybe later on value will be somewhere else ? 
       tweets: [],
+      prev: '', 
+      next: '', 
+      count: 0
     }
     this.handleRetweet = this.handleRetweet.bind(this);
     this.handleTweetAdd = this.handleTweetAdd.bind(this);
     this.handleLikeClick = this.handleLikeClick.bind(this);
     this.handleDeleteClick = this.handleDeleteClick.bind(this);
     this.handleTextArea = this.handleTextArea.bind(this);
+    this.fetchSomeTweets = this.fetchSomeTweets.bind(this);
   }
 
+  
   componentDidMount(){
-    // so by default im fetching all the tweets
+    this.fetchSomeTweets();
+  }
+  
+  fetchSomeTweets(forceEndpoint=null){
+    // forceEndpoint servers to paginate
     let endpoint = '/api/tweets';
-    // as a better alternative, you could have checked for page here
-    if (this.state.dataset.feedOwner){
-      // if django passes username
-      endpoint += `/?username=${this.state.dataset.feedOwner}`;
-    } else if (this.state.dataset.tweetId){
-      // if django passes tweetid
-      endpoint += `/${this.state.dataset.tweetId}`;
-    } else if (this.state.dataset.page === 'home'){
-      endpoint += `/?username=${this.state.dataset.username}`;
+
+    if (!forceEndpoint){
+      // so by default im fetching all the tweets
+      // as a better alternative, you could have checked for page here
+      if (this.state.dataset.feedOwner){
+        // if django passes username
+        endpoint += `/?username=${this.state.dataset.feedOwner}`;
+      } else if (this.state.dataset.tweetId){
+        // if django passes tweetid
+        endpoint += `/${this.state.dataset.tweetId}`;
+      } else if (this.state.dataset.page === 'home'){
+        endpoint += `/?username=${this.state.dataset.username}`;
+      }
+    } else {
+      endpoint = forceEndpoint;
     }
 
     fetch(endpoint)
@@ -46,12 +61,27 @@ class UserContextProvider extends React.Component{
         }
       })
       .then(data => {
-        // the condition below will be met, if detailed view requested a tweet
-        if (!Array.isArray(data)){
-          this.setState({tweets: [data]});
+        // temp, for pagination
+        if (data.results){
+          let prev = data.previous;
+          let next = data.next; 
+          let count = data.count;
+          data = data.results
+  
+          if (!Array.isArray(data)){
+            this.setState({tweets: [data]});
+          } else {
+            this.setState({tweets: data, prev, next, count});
+          };
         } else {
-          this.setState({tweets: data});
-        };
+          // the condition below will be met, if detailed view requested a tweet
+          if (!Array.isArray(data)){
+            this.setState({tweets: [data]});
+          } else {
+            this.setState({tweets: data});
+          };
+        }
+        window.scrollTo(0,0);
       })
       .catch(err => {
         console.log(err.message);
@@ -293,6 +323,7 @@ class UserContextProvider extends React.Component{
           handleRetweet: this.handleRetweet, 
           handleTextArea: this.handleTextArea,
           handleDeleteClick: this.handleDeleteClick,
+          fetchSomeTweets: this.fetchSomeTweets,
         }}
       >
 

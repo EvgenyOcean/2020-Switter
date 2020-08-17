@@ -8,6 +8,7 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.pagination import PageNumberPagination
 
 from .models import Tweet
 from .forms import TweetForm
@@ -21,12 +22,17 @@ def detail(request, pk):
     return render(request, 'pages/detail.html', {'tweet_id': pk})
 
 def user(request, username):
-    print(request.user.get_username())
     if (username == request.user.get_username()):
-        print('got a match!')
         return redirect('home')
     # should I handle err if tweet does not exist here? 
     return render(request, 'pages/user.html', {'username': username})
+
+def get_paginated_qs_response(qs, request):
+    paginator = PageNumberPagination()
+    paginator.page_size = 15
+    paginated_qs = paginator.paginate_queryset(qs, request)
+    seriazlier = TweetSerializer(paginated_qs, many=True, context={'request': request})
+    return paginator.get_paginated_response(seriazlier.data)
 
 
 @api_view(['POST'])
@@ -40,6 +46,7 @@ def add_tweet(request):
 
 
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def tweets_list(request):
     '''
     REST API endpoint to get the list with all the tweets, 
@@ -49,10 +56,14 @@ def tweets_list(request):
     username = request.GET.get('username')
     if username:
         qs = Tweet.objects.filter(user__username=username) 
+        # extra condition to check if it's home page, 
+        # cuz if username sent here is the same as request.username
+        # we can be sure that this is the home page
+        if username == request.user.username:
+            qs = Tweet.objects.feed(request.user)
     else:
         qs = Tweet.objects.all() 
-    serializer = TweetSerializer(qs, many=True, context={'request': request})
-    return Response(serializer.data, status=status.HTTP_200_OK)
+    return get_paginated_qs_response(qs, request)
 
 
 @api_view(['GET', 'PUT', 'DELETE'])

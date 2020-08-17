@@ -1,6 +1,13 @@
 import random
 from django.db import models
 from django.contrib.auth.models import User
+from django.db.models import Q 
+
+class FeedManager(models.Manager):
+    def feed(self, user):
+        ids = [profile.user.id for profile in user.following.all()]
+        ids.append(user.id)
+        return super().get_queryset().filter(Q(user__id__in=ids)).distinct().order_by('-timestamp')
 
 # Custom intermediate table
 class TweetLike(models.Model):
@@ -19,6 +26,7 @@ class Tweet(models.Model):
     #im not specifying blank=True in the below field
     #will show all the users who liked the tweet
     likes = models.ManyToManyField(User, related_name='tweet_user', through='TweetLike')
+    objects = FeedManager()
 
     class Meta:
         ordering = ["-id"]

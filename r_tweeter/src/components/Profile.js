@@ -44,13 +44,11 @@ function Profile(props) {
     .then(response => {
       if (response.ok) return response.json();
       else {throw new Error('Something went wrong!');};
-      // return response.json();
     })
     .then(data => {
       console.log(data);
     })
-    .catch(err => {console.log(err)})
-      
+    .catch(err => {console.log(err)}) 
   }
 
   useEffect(() => {
@@ -60,7 +58,6 @@ function Profile(props) {
         else {throw new Error('Something went wrong!');};
       })
       .then(data => {
-        console.log(data);
         setProfileData(data);
       })
       .catch(err => {console.log(err)})

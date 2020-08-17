@@ -4,6 +4,7 @@ import { UserContext } from '../context';
 import CreateTweetForm from '../components/CreateTweetForm';
 import Tweet from '../components/Tweet';
 import Profile from '../components/Profile';
+import Pagination from '../components/Pagination';
 
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
@@ -35,6 +36,7 @@ function Home(props) {
           /> 
         )}
       </Row>
+      <Pagination />
     </>
   )
 
