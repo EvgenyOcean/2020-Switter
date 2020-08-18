@@ -17,7 +17,8 @@ class UserContextProvider extends React.Component{
       tweets: [],
       prev: '', 
       next: '', 
-      count: 0
+      count: 0,
+      tweetsPerPage: 15,
     }
     this.handleRetweet = this.handleRetweet.bind(this);
     this.handleTweetAdd = this.handleTweetAdd.bind(this);
@@ -33,22 +34,20 @@ class UserContextProvider extends React.Component{
   }
   
   fetchSomeTweets(forceEndpoint=null){
-    // forceEndpoint servers to paginate
+    // default endpoint for home page
     let endpoint = '/api/tweets';
-
+    
+    // forceEndpoint servers to paginate
     if (!forceEndpoint){
-      // so by default im fetching all the tweets
-      // as a better alternative, you could have checked for page here
-      if (this.state.dataset.feedOwner){
+      if (this.state.dataset.page === 'user'){
         // if django passes username
         endpoint += `/?username=${this.state.dataset.feedOwner}`;
-      } else if (this.state.dataset.tweetId){
+      } else if (this.state.dataset.page === 'detail'){
         // if django passes tweetid
         endpoint += `/${this.state.dataset.tweetId}`;
-      } else if (this.state.dataset.page === 'home'){
-        endpoint += `/?username=${this.state.dataset.username}`;
       }
     } else {
+      // next or prev btn click
       endpoint = forceEndpoint;
     }
 

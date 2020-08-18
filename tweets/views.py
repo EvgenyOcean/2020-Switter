@@ -55,14 +55,11 @@ def tweets_list(request):
     '''
     username = request.GET.get('username')
     if username:
+        # works once user page has been requested
         qs = Tweet.objects.filter(user__username=username) 
-        # extra condition to check if it's home page, 
-        # cuz if username sent here is the same as request.username
-        # we can be sure that this is the home page
-        if username == request.user.username:
-            qs = Tweet.objects.feed(request.user)
     else:
-        qs = Tweet.objects.all() 
+        # works once home page has been requested
+        qs = Tweet.objects.feed(request.user)
     return get_paginated_qs_response(qs, request)
 
 

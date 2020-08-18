@@ -65,7 +65,6 @@ function Profile(props) {
 
 
   if (profileData.user){
-    // profileData.followerings.followers.push('evgenyocean');
     let isFollower = profileData.followerings.followers.includes(dataset.username);
 
     let editableInfo = (
