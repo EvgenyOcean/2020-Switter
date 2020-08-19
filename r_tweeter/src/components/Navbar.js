@@ -1,10 +1,31 @@
-import React from 'react';
+import React, {useContext} from 'react';
+import {UserContext} from '../context';
+
+import NavbarComponent from 'react-bootstrap/Navbar';
+import Nav from 'react-bootstrap/Nav';
 
 function Navbar(props) {
+  let {dataset} = useContext(UserContext);
+
   return (
-    <div className="py-3 bg-warning mb-3">
-      Hello from Navbar
-    </div>
+    <NavbarComponent bg="primary" variant="dark" className="mb-5">
+      <NavbarComponent.Brand href="#home">Dj Tweet</NavbarComponent.Brand>
+      <Nav className="mr-auto">
+        <Nav.Link href="/">Home</Nav.Link>
+        <Nav.Link href="/users">Users</Nav.Link>
+      </Nav>
+      <Nav>
+        {
+          dataset.username ?
+          <Nav.Link href="/logout">Logout [{dataset.username}]</Nav.Link> 
+          :
+          <>
+            <Nav.Link href="/login">Login</Nav.Link>
+            <Nav.Link href="/register">Register</Nav.Link>
+          </>
+        }
+      </Nav>
+    </NavbarComponent>
   );
 }
 

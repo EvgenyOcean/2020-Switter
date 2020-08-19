@@ -30,7 +30,9 @@ class UserContextProvider extends React.Component{
 
   
   componentDidMount(){
-    this.fetchSomeTweets();
+    if (this.state.dataset.username){
+      this.fetchSomeTweets();
+    }
   }
   
   fetchSomeTweets(forceEndpoint=null){

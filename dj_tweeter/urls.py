@@ -10,7 +10,8 @@ from accounts import views as accounts_view
 
 urlpatterns = [
     path('', home, name='home'), #gotta fix that
-    # careful here, cuz user may have a username 'register'
+    # careful here, cuz user may have a username 'register'/'users'
+    path('users', accounts_view.users, name='users'),
     path('register', accounts_view.register, name='register'),
     path('login', auth_views.LoginView.as_view(template_name="accounts/login.html"), name='login'),
     path('logout', auth_views.LogoutView.as_view(template_name="accounts/logout.html"), name='logout'),

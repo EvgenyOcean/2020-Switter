@@ -9,18 +9,18 @@ import UserContextProvider from './context';
 // need to get an element first, and assign it to a vatiable
 // to get its dataset values
 // to let the context know what endpoint should it fetch to
-let homePage = document.getElementById('root');
+let reactPage = document.getElementById('root');
 
-// homePage will be null if it's login or register
+// reactPage will be null if it's login or register
 // cuz django handles registration and login by itself
-if (homePage){
+if (reactPage){
   ReactDOM.render(
     // we should consider moving context to the App, cuz there're some component
     // which don't need the context value at all
-    <UserContextProvider {...homePage.dataset}>
+    <UserContextProvider {...reactPage.dataset}>
       <App />
     </UserContextProvider>,
-    homePage
+    reactPage
   );
 }
 

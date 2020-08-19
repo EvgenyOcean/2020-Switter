@@ -1,10 +1,11 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.models import User
+from django.contrib.auth.decorators import login_required
 
 from .models import Profile
 from .forms import UserRegisterFrom
-from .serializers import ProfileSerializer, ProfileUpdateSerializer
+from .serializers import ProfileSerializer, ProfileUpdateSerializer, UsersSerializer
 
 from rest_framework import status
 from rest_framework.response import Response
@@ -23,6 +24,10 @@ def register(request):
     else: 
         form = UserRegisterFrom()
     return render(request, 'accounts/register.html', {'form': form})
+
+@login_required
+def users(request): 
+    return render(request, 'accounts/users.html')
 
 @api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated])
@@ -87,3 +92,15 @@ def adjust_followers(request, username):
         following_user.profile.followers.add(current_user)
         serializer = ProfileSerializer(following_user.profile)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def users_list(request):
+    '''
+    An API to get all the registered users
+    To display where needed
+    '''
+    users = User.objects.all() 
+    serializer = UsersSerializer(users, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)

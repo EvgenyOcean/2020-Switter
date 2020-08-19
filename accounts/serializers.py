@@ -24,7 +24,6 @@ class ProfileUpdateSerializer(serializers.Serializer):
 
             return username
 
-
     def validate_email(self, email):
         #check if email has already been taken (but not by this user)
         user = None
@@ -65,3 +64,15 @@ class ProfileSerializer(serializers.ModelSerializer):
         following = [following.user.username for following in obj.user.following.all()]
         return {'followers': followers, 'following': following}
 
+class UsersSerializer(serializers.ModelSerializer):
+    profile = serializers.SerializerMethodField()
+    class Meta:
+        model = User
+        fields = ['username', 'first_name', 'last_name', 'profile']
+
+    def get_profile(self, obj): 
+        data = {
+            'bio': obj.profile.bio, 
+            'location': obj.profile.location
+        }
+        return data

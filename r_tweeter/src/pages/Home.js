@@ -14,6 +14,7 @@ function Home(props) {
     dataset, handleLikeClick, 
     handleRetweet, handleTweetAdd, 
     handleTextArea, value, tweets,
+    count, tweetsPerPage
   } = useContext(UserContext);
 
   let content = (
@@ -36,11 +37,12 @@ function Home(props) {
           /> 
         )}
       </Row>
-      <Pagination />
+      {count > tweetsPerPage && <Pagination />}
     </>
   )
 
-  let login = <div>Hello, thanks for jumping in. Please, consider loging in to see the content!</div>
+  // may be deleted
+  let login = <div>Hello, thanks for jumping in. Please, consider logging in to see the content!</div>
 
   return (
     <Container>
