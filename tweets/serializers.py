@@ -34,7 +34,12 @@ class TweetCreateSerializer(serializers.ModelSerializer):
         return data
     
     def get_owner(self, obj):
-        return obj.user.username
+        data = {
+            'username': obj.user.username,
+            'avatar': obj.user.profile.avatar.url
+        }
+        
+        return data
 
     #similar to flask, it passes the cleaned data of a required field as a second argument
     def validate_content(self, content):
@@ -70,4 +75,9 @@ class TweetSerializer(serializers.ModelSerializer):
         return data
 
     def get_owner(self, obj):
-        return obj.user.username
+        data = {
+            'username': obj.user.username,
+            'avatar': obj.user.profile.avatar.url
+        }
+        
+        return data

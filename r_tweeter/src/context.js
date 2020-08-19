@@ -207,8 +207,6 @@ class UserContextProvider extends React.Component{
 
     } else {
       // we have only one tweet in the state
-      console.log(id);
-
       if (this.state.tweets[0].id === id){
         // liking the main tweet
         action = this.state.tweets[0].likes.user_liked ? 'dislike' : 'like';
@@ -263,7 +261,6 @@ class UserContextProvider extends React.Component{
       if (deepStateTweetsCopy.find(tweet => tweet.id === id)){
         currentTweet = deepStateTweetsCopy.find(tweet => tweet.id === id);
         //change original tweet's likes
-        // console.log(currentTweet);
         currentTweet.likes.likes = newLikes; 
         currentTweet.likes.user_liked = !currentTweet.likes.user_liked;
 

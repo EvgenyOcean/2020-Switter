@@ -7,15 +7,13 @@ function User(props) {
       <div className="card-body">
         <a href={'/' + user.username}><h5 className="mt-0 mb-2">@{user.username}</h5></a>
         <li className="media">
-          <img src="..." className="mr-3" alt="..." />
+          <img src={user.profile.avatar} className="mr-3" alt="avatar" />
           <div className="media-body">
             <p>Full Name: {user.first_name + ' ' + user.last_name}</p>
             <p>Location: {user.profile.location}</p>
+            <p>Bio: {user.profile.bio}</p>
           </div>
         </li>
-      </div>
-      <div class="card-footer bg-transparent py-0 border-primary">
-        <p>Bio: {user.profile.bio}</p>
       </div>
     </div>
   );

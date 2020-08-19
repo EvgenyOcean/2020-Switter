@@ -146,7 +146,9 @@ LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = "home"
 
 # MEDIA STUFF
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+# where uploaded files will be located on the file system
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media') 
+# how to get access to the media files via url
 MEDIA_URL = '/media/'
 
 

@@ -10,10 +10,10 @@ class Profile(models.Model):
     followers = models.ManyToManyField(User, related_name='following')
     bio = models.TextField(null=True, blank=True)
     location = models.CharField(max_length=250, null=True, blank=True)
+    avatar = models.ImageField(default='default.jpg', upload_to='profile_pics')
 
 def create_or_update_profile(sender, instance, created, **kwargs):
     if created:
         Profile.objects.create(user=instance)
-        print('Profile created!')
 
 post_save.connect(create_or_update_profile, sender=User)

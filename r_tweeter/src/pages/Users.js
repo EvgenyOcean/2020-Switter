@@ -16,7 +16,6 @@ function Users(props) {
         }
       })
       .then(data => {
-        console.log(data);
         setUsers(data);
       })
       .catch(err => {console.log(err);})

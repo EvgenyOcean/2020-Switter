@@ -73,6 +73,7 @@ class UsersSerializer(serializers.ModelSerializer):
     def get_profile(self, obj): 
         data = {
             'bio': obj.profile.bio, 
-            'location': obj.profile.location
+            'location': obj.profile.location, 
+            'avatar': obj.profile.avatar.url
         }
         return data
