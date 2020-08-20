@@ -12,9 +12,9 @@ import Row from 'react-bootstrap/Row';
 function Home(props) {
   let {
     dataset, handleLikeClick, 
-    handleRetweet, handleTweetAdd, 
-    handleTextArea, value, tweets,
-    count, tweetsPerPage
+    handleTweetAdd, handleTextArea, 
+    value, tweets, count, 
+    tweetsPerPage, openModal
   } = useContext(UserContext);
 
   let content = (
@@ -31,9 +31,9 @@ function Home(props) {
           <Tweet
             key={tweet.id} 
             tweet={tweet} 
-            handleRetweet={handleRetweet} 
             handleLikeClick={handleLikeClick}
             dataset={dataset}
+            openModal={openModal}
           /> 
         )}
       </Row>

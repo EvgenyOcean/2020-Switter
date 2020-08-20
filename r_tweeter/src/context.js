@@ -6,6 +6,7 @@ class UserContextProvider extends React.Component{
   constructor(props){
     super(props);
     this.state = {
+      // for correct render purposes
       dataset: {
         username: props.username, 
         canTweet: props.canTweet,
@@ -13,12 +14,17 @@ class UserContextProvider extends React.Component{
         tweetId: props.tweetId,
         feedOwner: props.feedOwner
       },
-      value: '', //maybe later on value will be somewhere else ? 
+      // for add_tweet purposes
+      value: '', 
       tweets: [],
+      // for pagination purposes
       prev: '', 
       next: '', 
       count: 0,
       tweetsPerPage: 15,
+      // for retweeting modal purposes
+      show: false,
+      retweetingTweet: null,
     }
     this.handleRetweet = this.handleRetweet.bind(this);
     this.handleTweetAdd = this.handleTweetAdd.bind(this);
@@ -26,6 +32,8 @@ class UserContextProvider extends React.Component{
     this.handleDeleteClick = this.handleDeleteClick.bind(this);
     this.handleTextArea = this.handleTextArea.bind(this);
     this.fetchSomeTweets = this.fetchSomeTweets.bind(this);
+    this.openModal = this.openModal.bind(this);
+    this.closeModal = this.closeModal.bind(this);
   }
 
   
@@ -121,8 +129,13 @@ class UserContextProvider extends React.Component{
 
   // you need to fix that, cuz when you're retweing someone else's tweets 
   // they're prepending to someone else's feed which is bad
-  handleRetweet(id){
-    let action = 'retweet';
+  handleRetweet(id, content){
+    let data = {
+      action: 'retweet',
+    }
+    if (content){
+      data.content = content;
+    }
     fetch(`/api/tweets/tweet-action/${id}`, {
       method: "POST", 
       headers: {
@@ -131,7 +144,7 @@ class UserContextProvider extends React.Component{
         'X-CSRFToken': getCookie('csrftoken'),
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({action}), 
+      body: JSON.stringify(data), 
     }).then(response => {
       if (response.ok){
         return response.json()
@@ -143,9 +156,10 @@ class UserContextProvider extends React.Component{
       // this is true only if a user on his home page
       if (this.state.dataset.page === 'home'){
         let tweets = [newTweet, ...this.state.tweets];
-        this.setState({tweets});
+        this.setState({tweets, show: false});
       } else {
         // paste a message that the tweet was retweeted; 
+        this.setState({show: false});
         console.log('Tweet was successfully retweeted!');
       }
     }).catch(err => {
@@ -309,6 +323,28 @@ class UserContextProvider extends React.Component{
     this.setState({value});
   }
 
+  // handle Cart click on the home page
+  openModal(id){
+    // type of tweets is always an array
+    // id may be in tweet.original
+    // not all of the tweets have .original
+    let retweetingTweet = this.state.tweets.find(tweet => tweet.id === id);
+    if (!retweetingTweet){
+      retweetingTweet = this.state.tweets.find(tweet => {
+        if (tweet.original){
+          return tweet.original.id === id
+        }
+        return false;
+      });
+      retweetingTweet = retweetingTweet.original;
+    }
+    this.setState({show: true, retweetingTweet});
+  }
+
+  closeModal(e){
+    this.setState({show: false});
+  }
+
   render(){
     return(
       // so, basically value={{...this.state}} doesn't make a deep copy, 
@@ -322,6 +358,8 @@ class UserContextProvider extends React.Component{
           handleTextArea: this.handleTextArea,
           handleDeleteClick: this.handleDeleteClick,
           fetchSomeTweets: this.fetchSomeTweets,
+          closeModal: this.closeModal, 
+          openModal: this.openModal,
         }}
       >
 

@@ -5,13 +5,14 @@ import { UserContext } from '../context';
 function Detail(props) {
 
   let {
-    dataset, tweets, handleRetweet, 
-    handleLikeClick, handleDeleteClick,
+    dataset, tweets, 
+    handleLikeClick,
+    handleDeleteClick, openModal,
   } = useContext(UserContext);
 
   let toRender = tweets.length ? <Tweet
     tweet={tweets[0]} 
-    handleRetweet={handleRetweet} 
+    openModal={openModal}
     handleLikeClick={handleLikeClick}
     handleDeleteClick={handleDeleteClick}
     dataset={dataset}

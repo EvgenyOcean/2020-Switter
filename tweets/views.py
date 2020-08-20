@@ -103,17 +103,14 @@ def tweet_action(request, pk):
     actionSerializer = TweetActionSerializer(data=request.data)
     if actionSerializer.is_valid(raise_exception=True): 
         action = actionSerializer.validated_data.get('action')
-        #isn't content empty? 
         content = actionSerializer.validated_data.get('content')
 
         if action == 'LIKE': 
-            print('liking')
             tweet.likes.add(user)
             return Response({'likes': len(tweet.likes.all())}, 
                             status=status.HTTP_200_OK)
 
         if action == 'DISLIKE': 
-            print('disliking')
             tweet.likes.remove(user)
             return Response({'likes': len(tweet.likes.all())}, status=status.HTTP_200_OK)
 
