@@ -12,7 +12,8 @@ class UserContextProvider extends React.Component{
         canTweet: props.canTweet,
         page: props.page,
         tweetId: props.tweetId,
-        feedOwner: props.feedOwner
+        feedOwner: props.feedOwner,
+        message: props.message,
       },
       // for add_tweet purposes
       value: '', 
@@ -38,7 +39,10 @@ class UserContextProvider extends React.Component{
 
   
   componentDidMount(){
-    if (this.state.dataset.username){
+    // when do you actually need to fetch some tweets?
+    // otherwise, it's error page or something else
+    if (this.state.dataset.username && 
+       ['home', 'users', 'detail', 'user'].includes(this.state.dataset.page)){
       this.fetchSomeTweets();
     }
   }

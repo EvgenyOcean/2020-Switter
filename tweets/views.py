@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, HttpResponseRedirect, Http404, JsonResponse
 from django.conf import settings
 from django.utils.http import url_has_allowed_host_and_scheme
@@ -18,13 +18,17 @@ def home(request):
     return render(request, 'pages/home.html', {})
 
 def detail(request, pk):
+    get_object_or_404(Tweet, pk=pk)
     # should I handle err if tweet does not exist here? 
     return render(request, 'pages/detail.html', {'tweet_id': pk})
 
 def user(request, username):
     if (username == request.user.get_username()):
         return redirect('home')
-    # should I handle err if tweet does not exist here? 
+
+    qs = Tweet.objects.filter(user__username=username) 
+    if not qs.exists():
+        raise Http404('This user does not exist!')
     return render(request, 'pages/user.html', {'username': username})
 
 def get_paginated_qs_response(qs, request):
@@ -69,7 +73,6 @@ def tweet_details(request, pk):
     """
     Retrieve, update or delete a tweet.
     """
-    
     try:
         tweet = Tweet.objects.get(pk=pk)
     except Tweet.DoesNotExist:
