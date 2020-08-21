@@ -26,6 +26,9 @@ class UserContextProvider extends React.Component{
       // for retweeting modal purposes
       show: false,
       retweetingTweet: null,
+      // notification 
+      notification: '',
+      notVariant: 'success',
     }
     this.handleRetweet = this.handleRetweet.bind(this);
     this.handleTweetAdd = this.handleTweetAdd.bind(this);
@@ -44,6 +47,13 @@ class UserContextProvider extends React.Component{
     if (this.state.dataset.username && 
        ['home', 'users', 'detail', 'user'].includes(this.state.dataset.page)){
       this.fetchSomeTweets();
+    }
+  }
+
+  componentDidUpdate(_, prevState){
+    if (this.state.dataset.page === prevState.dataset.page) return;
+    if (this.state.notification){
+      this.setState({notification: '', notVariant: 'success'});
     }
   }
   
@@ -131,8 +141,6 @@ class UserContextProvider extends React.Component{
       })
   }
 
-  // you need to fix that, cuz when you're retweing someone else's tweets 
-  // they're prepending to someone else's feed which is bad
   handleRetweet(id, content){
     let data = {
       action: 'retweet',
@@ -153,7 +161,7 @@ class UserContextProvider extends React.Component{
       if (response.ok){
         return response.json()
       }else {
-        throw new Error('something went wrong!');
+        throw new Error('Something went wrong! Please try again later!');
       }
     }).then(newTweet => {
       // what it means is we need to prepend new retweet only if its user's own feed
@@ -163,11 +171,10 @@ class UserContextProvider extends React.Component{
         this.setState({tweets, show: false});
       } else {
         // paste a message that the tweet was retweeted; 
-        this.setState({show: false});
-        console.log('Tweet was successfully retweeted!');
+        this.setState({show: false, notification: 'Successful retweet!'});
       }
     }).catch(err => {
-      console.log(err);
+      this.setState({show: false, notification: err.message, notVariant: 'danger'});
     })
   }
 
@@ -186,14 +193,15 @@ class UserContextProvider extends React.Component{
       if (response.ok){
         return response.json()
       }else {
-        throw new Error('something went wrong!');
+        throw new Error('Something went wrong! Please try again later!');
       }
     })
     .then(data => {
-      console.log(data);
+      window.location.href = '/';
+      this.setState({notification: data.message});
     })
     .catch(err => {
-      console.log(err);
+      this.setState({notification: err.message, notVariant: 'danger'});
     })
   }
 

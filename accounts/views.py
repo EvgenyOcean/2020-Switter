@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 
 from .models import Profile
 from .forms import UserRegisterFrom
@@ -14,13 +15,15 @@ from rest_framework.permissions import IsAuthenticated
 
 # Create your views here.
 def register(request):
+    if request.user.is_authenticated: 
+        return redirect('home')
     if request.method == 'POST':
         form = UserRegisterFrom(request.POST)
         if form.is_valid():
             form.save()
             username = form.cleaned_data.get('username')
-            print(f'New account for {username} was created')
-            return redirect('home')
+            messages.success(request, f'Account for {username} has been created! You can log in!')
+            return redirect('/login')
     else: 
         form = UserRegisterFrom()
     return render(request, 'accounts/register.html', {'form': form})

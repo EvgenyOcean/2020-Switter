@@ -85,10 +85,10 @@ def tweet_details(request, pk):
     if request.method == 'DELETE':
         if request.user == tweet.user: 
             tweet.delete()
-            return Response({"message": "The tweet was deleted!"}, 
+            return Response({"message": "The tweet has been deleted!"}, 
                             status=status.HTTP_200_OK)
         else:
-            return Response({'message': 'You\'re not authorized'}, 
+            return Response({"message": "You're not authorized"}, 
                             status=status.HTTP_403_FORBIDDEN)
     
 

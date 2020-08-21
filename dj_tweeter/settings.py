@@ -144,6 +144,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, "static-root")
 # LOGIN STUFF
 LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = "home"
+LOGOUT_REDIRECT_URL = '/login'
 
 # MEDIA STUFF
 # where uploaded files will be located on the file system

@@ -9,13 +9,13 @@ from tweets.views import home, detail, user #gotta fix that
 from accounts import views as accounts_view
 
 urlpatterns = [
-    path('admin', admin.site.urls),
+    path('admin/', admin.site.urls),
     path('', home, name='home'), #gotta fix that
     # careful here, cuz user may have a username 'register'/'users'
     path('users', accounts_view.users, name='users'),
     path('register', accounts_view.register, name='register'),
-    path('login', auth_views.LoginView.as_view(template_name="accounts/login.html"), name='login'),
-    path('logout', auth_views.LogoutView.as_view(template_name="accounts/logout.html"), name='logout'),
+    path('login', auth_views.LoginView.as_view(template_name="accounts/login.html", redirect_authenticated_user=True), name='login'),
+    path('logout', auth_views.LogoutView.as_view(), name='logout'),
     path('api/tweets/', include('tweets.urls')),
     path('api/accounts/', include('accounts.urls')),
     path('react/', TemplateView.as_view(template_name="react/react.html")),
