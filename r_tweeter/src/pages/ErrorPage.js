@@ -9,7 +9,6 @@ function ErrorPage(props) {
   return (
     <StyledContainer>
       <h4>Oops! This page Could Not Be Found!</h4>
-      <img src="/media/error.png" alt="Error"/>
       <p>&lt; {props.message} /&gt;</p>
       <Button href="/" variant="primary">Go to homepage</Button>
     </StyledContainer>

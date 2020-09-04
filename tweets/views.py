@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, HttpResponseRedirect, Http404, JsonResponse
 from django.conf import settings
 from django.utils.http import url_has_allowed_host_and_scheme
+from django.contrib.auth.models import User
 
 from .serializers import TweetSerializer, TweetActionSerializer, TweetCreateSerializer
 from rest_framework import status
@@ -26,7 +27,7 @@ def user(request, username):
     if (username == request.user.get_username()):
         return redirect('home')
 
-    qs = Tweet.objects.filter(user__username=username) 
+    qs = User.objects.filter(username=username)
     if not qs.exists():
         raise Http404('This user does not exist!')
     return render(request, 'pages/user.html', {'username': username})
