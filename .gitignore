@@ -27,9 +27,6 @@ share/python-wheels/
 *.egg
 MANIFEST
 
-#React-Django Static
-static/
-
 # VScode # 
 .vscode
 
