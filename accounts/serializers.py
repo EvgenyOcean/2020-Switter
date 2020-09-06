@@ -6,9 +6,10 @@ class ProfileUpdateSerializer(serializers.Serializer):
     username = serializers.CharField(required=True, max_length=30)
     firstName = serializers.CharField(required=False, allow_blank=True, max_length=20)
     lastName = serializers.CharField(required=False, allow_blank=True, max_length=20)
-    email = serializers.EmailField()
+    # email = serializers.EmailField()
     bio = serializers.CharField(required=False, allow_blank=True, max_length=250)
     location = serializers.CharField(required=False, allow_blank=True, max_length=100)
+    avatar = serializers.FileField(allow_empty_file=True, required=False)
 
     def validate_username(self, username):  
         #check if username has already been taken (but not by this user)
@@ -24,19 +25,20 @@ class ProfileUpdateSerializer(serializers.Serializer):
 
             return username
 
-    def validate_email(self, email):
-        #check if email has already been taken (but not by this user)
-        user = None
-        request = self.context.get("request")
-        if request and hasattr(request, "user"):
-            user = request.user
-            if user.email == email:
-                return email
+    # I don't think I should let users to change their email so easilty
+    # def validate_email(self, email):
+    #     #check if email has already been taken (but not by this user)
+    #     user = None
+    #     request = self.context.get("request")
+    #     if request and hasattr(request, "user"):
+    #         user = request.user
+    #         if user.email == email:
+    #             return email
 
-            if User.objects.filter(email=email).exists():
-                raise serializers.ValidationError('This email has already been taken!')
+    #         if User.objects.filter(email=email).exists():
+    #             raise serializers.ValidationError('This email has already been taken!')
 
-            return email
+    #         return email
 
 
 
@@ -45,7 +47,7 @@ class ProfileSerializer(serializers.ModelSerializer):
     followerings = serializers.SerializerMethodField()
     class Meta: 
         model = Profile
-        fields = ['followerings', 'bio', 'location', 'user']
+        fields = ['followerings', 'bio', 'location', 'user', 'avatar']
 
     def get_user(self, obj):
         # returns an object with first_name, last_name, username
@@ -53,8 +55,8 @@ class ProfileSerializer(serializers.ModelSerializer):
         username = obj.user.username
         first_name = obj.user.first_name
         last_name = obj.user.last_name
-        email = obj.user.email
-        return {'username': username, 'first_name': first_name, 'last_name': last_name, 'email': email}
+        # email = obj.user.email
+        return {'username': username, 'first_name': first_name, 'last_name': last_name}
     
     def get_followerings(self, obj):
         # What do I need to get? 

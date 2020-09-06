@@ -5,12 +5,12 @@ from django.conf.urls.static import static
 from django.views.generic import TemplateView
 from django.contrib.auth import views as auth_views
 
-from tweets.views import home, detail, user #gotta fix that
+from tweets.views import home, detail, user 
 from accounts import views as accounts_view
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', home, name='home'), #gotta fix that
+    path('', home, name='home'),
     # careful here, cuz user may have a username 'register'/'users'
     path('users', accounts_view.users, name='users'),
     path('register', accounts_view.register, name='register'),

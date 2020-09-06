@@ -184,4 +184,5 @@ AWS_S3_SIGNATURE_VERSION = 's3v4'
 AWS_S3_ADDRESSING_STYLE = "virtual"
 
 #HEROKU
-django_heroku.settings(locals())
+if not DEBUG:
+    django_heroku.settings(locals())

@@ -3,6 +3,7 @@ from django.http import HttpResponse, HttpResponseRedirect, Http404, JsonRespons
 from django.conf import settings
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.contrib.auth.models import User
+from django.contrib.auth.decorators import login_required
 
 from .serializers import TweetSerializer, TweetActionSerializer, TweetCreateSerializer
 from rest_framework import status
@@ -15,6 +16,7 @@ from .models import Tweet
 from .forms import TweetForm
 
 # Create your views here.
+@login_required
 def home(request):
     return render(request, 'pages/home.html', {})
 

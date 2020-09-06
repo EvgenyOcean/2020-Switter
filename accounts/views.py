@@ -53,22 +53,25 @@ def profile(request, username):
                 username = serializer.validated_data.get('username')
                 first_name = serializer.validated_data.get('firstName')
                 last_name = serializer.validated_data.get('lastName')
-                email = serializer.validated_data.get('email')
+                # email = serializer.validated_data.get('email')
                 bio = serializer.validated_data.get('bio')
                 location = serializer.validated_data.get('location')
+                avatar = serializer.validated_data.get('avatar')
 
                 user.username = username
                 user.first_name = first_name
                 user.last_name = last_name
-                user.email = email
+                # user.email = email
                 user.save()
 
                 profile = user.profile
                 profile.bio = bio
                 profile.location = location
+                if avatar:
+                    profile.avatar = avatar
                 profile.save()
 
-                return Response({"message": "Everything went smooth!"}, status=status.HTTP_200_OK)
+                return Response({"message": "Profile was successfully updated!"}, status=status.HTTP_200_OK)
 
     else: 
         return Response({"message": "User's profile was not found!"}, status=status.HTTP_404_NOT_FOUND)

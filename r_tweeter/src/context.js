@@ -38,6 +38,7 @@ class UserContextProvider extends React.Component{
     this.fetchSomeTweets = this.fetchSomeTweets.bind(this);
     this.openModal = this.openModal.bind(this);
     this.closeModal = this.closeModal.bind(this);
+    this.addNotification = this.addNotification.bind(this);
   }
 
   
@@ -335,7 +336,6 @@ class UserContextProvider extends React.Component{
     this.setState({value});
   }
 
-  // handle Cart click on the home page
   openModal(id){
     // type of tweets is always an array
     // id may be in tweet.original
@@ -353,8 +353,12 @@ class UserContextProvider extends React.Component{
     this.setState({show: true, retweetingTweet});
   }
 
-  closeModal(e){
+  closeModal(){
     this.setState({show: false});
+  }
+
+  addNotification(msg, notVariant){
+    this.setState({notification: msg, notVariant});
   }
 
   render(){
@@ -372,6 +376,7 @@ class UserContextProvider extends React.Component{
           fetchSomeTweets: this.fetchSomeTweets,
           closeModal: this.closeModal, 
           openModal: this.openModal,
+          addNotification: this.addNotification,
         }}
       >
 

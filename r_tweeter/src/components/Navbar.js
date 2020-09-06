@@ -8,7 +8,7 @@ function Navbar(props) {
   let {dataset} = useContext(UserContext);
 
   return (
-    <NavbarComponent bg="primary" variant="dark" className="mb-3">
+    <NavbarComponent bg="dark" variant="dark" className="mb-3">
       <NavbarComponent.Brand href="#home">Dj Tweet</NavbarComponent.Brand>
       <Nav className="mr-auto">
         <Nav.Link href="/">Home</Nav.Link>

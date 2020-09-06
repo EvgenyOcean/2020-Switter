@@ -14,12 +14,13 @@ function Home(props) {
     dataset, handleLikeClick, 
     handleTweetAdd, handleTextArea, 
     value, tweets, count, 
-    tweetsPerPage, openModal
+    tweetsPerPage, openModal,
+    addNotification
   } = useContext(UserContext);
 
   let content = (
     <>
-      <Profile dataset={dataset}/>
+      <Profile dataset={dataset} addNotification={addNotification}/>
       {dataset.canTweet === 'true' && 
       <CreateTweetForm 
         value={value} 
